@@ -1,0 +1,16 @@
+{
+  "name": "cloudkitchen-lite",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "^1.2.8"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/pg": "^8.11.11",
+    "elysia": "^1.2.25",
+    "pg": "^8.14.1"
+  }
+}
