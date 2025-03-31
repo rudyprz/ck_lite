@@ -129,9 +129,11 @@ const createFoodDeliveryApp = () => {
   // Setup webhook routes
   app.post("/webhook/uber-eats", async ({ body }) => {
     try {
-      await platformIntegrations.uberEats.processOrder(body);
+      const response = await platformIntegrations.uberEats.processOrder(body);
+      console.log("uberEatsResponse", response);
       return { status: "success", message: "Uber Eats order processed" };
     } catch (error) {
+      console.log("uberEatsError", error);
       return {
         status: "error",
         message: error instanceof Error ? error.message : "Processing failed",
@@ -141,9 +143,11 @@ const createFoodDeliveryApp = () => {
 
   app.post("/webhook/rappi", async ({ body }) => {
     try {
-      await platformIntegrations.rappi.processOrder(body);
+      const response = await platformIntegrations.rappi.processOrder(body);
+      console.log("rappiResponse", response);
       return { status: "success", message: "Rappi order processed" };
     } catch (error) {
+      console.log("rappiError", error);
       return {
         status: "error",
         message: error instanceof Error ? error.message : "Processing failed",
@@ -153,9 +157,11 @@ const createFoodDeliveryApp = () => {
 
   app.post("/webhook/didi-food", async ({ body }) => {
     try {
-      await platformIntegrations.didiFood.processOrder(body);
+      const response = await platformIntegrations.didiFood.processOrder(body);
+      console.log("didiFoodResponse", response);
       return { status: "success", message: "Didi Food order processed" };
     } catch (error) {
+      console.log("didiFoodError", error);
       return {
         status: "error",
         message: error instanceof Error ? error.message : "Processing failed",
