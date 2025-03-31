@@ -128,6 +128,7 @@ const createFoodDeliveryApp = () => {
 
   // Setup webhook routes
   app.post("/webhook/uber-eats", async ({ body }) => {
+    console.log("uberEatsBody", body);
     try {
       const response = await platformIntegrations.uberEats.processOrder(body);
       console.log("uberEatsResponse", response);
@@ -142,6 +143,7 @@ const createFoodDeliveryApp = () => {
   });
 
   app.post("/webhook/rappi", async ({ body }) => {
+    console.log("rappiBody", body);
     try {
       const response = await platformIntegrations.rappi.processOrder(body);
       console.log("rappiResponse", response);
@@ -156,6 +158,7 @@ const createFoodDeliveryApp = () => {
   });
 
   app.post("/webhook/didi-food", async ({ body }) => {
+    console.log("didiFoodBody", body);
     try {
       const response = await platformIntegrations.didiFood.processOrder(body);
       console.log("didiFoodResponse", response);
