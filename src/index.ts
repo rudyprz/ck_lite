@@ -1,5 +1,29 @@
 import { Elysia } from "elysia";
 import { Database } from "bun:sqlite";
+import type { Order } from "./types/order";
+
+enum uberEatsOrderType {
+  ordersNotification = "orders.notification",
+  ordersCancel = "orders.cancel",
+}
+
+type uberEatsWebhookBody = {
+  event_id: string;
+  event_type: uberEatsOrderType;
+  event_time: string;
+  resource_href: string;
+  meta: {
+    user_id: string;
+    resource_id: string;
+    status: string;
+  };
+  webhook_meta: {
+    client_id: string;
+    webhook_config_id: string;
+    webhook_msg_timestamp: string;
+    webhook_msg_uuid: string;
+  };
+};
 
 // Utility functions for database operations
 const createDatabaseOperations = (db: Database) => ({
@@ -31,7 +55,7 @@ const createDatabaseOperations = (db: Database) => ({
 // Platform integration functions
 const createPlatformIntegration = (db: Database) => ({
   uberEats: {
-    processOrder: async (orderData: any) => {
+    processOrder: async (orderData: Order) => {
       // Validate Uber Eats specific order structure
       const validatedOrder = validateUberEatsOrder(orderData);
 
@@ -65,9 +89,9 @@ const createPlatformIntegration = (db: Database) => ({
 });
 
 // Order validation functions
-const validateUberEatsOrder = (order: any) => {
+const validateUberEatsOrder = (order: Order) => {
   // Implement Uber Eats specific validation
-  if (!order.orderId || !order.restaurantId) {
+  if (!order.id || !order.state || !order.status) {
     throw new Error("Invalid Uber Eats order structure");
   }
   return {
@@ -127,20 +151,41 @@ const createFoodDeliveryApp = () => {
   const app = new Elysia();
 
   // Setup webhook routes
-  app.post("/webhook/uber-eats", async ({ body }) => {
-    console.log("uberEatsBody", body);
-    try {
-      const response = await platformIntegrations.uberEats.processOrder(body);
-      console.log("uberEatsResponse", response);
-      return { status: "success", message: "Uber Eats order processed" };
-    } catch (error) {
-      console.log("uberEatsError", error);
-      return {
-        status: "error",
-        message: error instanceof Error ? error.message : "Processing failed",
-      };
+  app.post(
+    "/webhook/uber-eats",
+    async ({ body }: { body: uberEatsWebhookBody }) => {
+      console.log("uberEatsBody", body);
+      switch (body.event_type) {
+        case uberEatsOrderType.ordersNotification:
+          console.log("order created");
+          break;
+        case uberEatsOrderType.ordersCancel:
+          console.log("order cancelled");
+          break;
+      }
+      try {
+        const orderResponse = await fetch(body.resource_href, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const order = await orderResponse.json();
+        console.log("uberEatsOrder", order);
+        const response = await platformIntegrations.uberEats.processOrder(
+          order
+        );
+        console.log("uberEatsResponse", response);
+        return { status: "success", message: "Uber Eats order processed" };
+      } catch (error) {
+        console.log("uberEatsError", error);
+        return {
+          status: "error",
+          message: error instanceof Error ? error.message : "Processing failed",
+        };
+      }
     }
-  });
+  );
 
   app.post("/webhook/rappi", async ({ body }) => {
     console.log("rappiBody", body);
