@@ -184,6 +184,7 @@ export interface Order {
   display_id: string;
   external_id: string;
   state: string;
+  current_state: string;
   status: string;
   preparation_status: string;
   ordering_platform: string;

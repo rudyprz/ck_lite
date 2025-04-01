@@ -33,17 +33,13 @@ type tokenAuthResponse = {
 };
 
 const loginAuth0UberEats = async () => {
-  const response = await fetch("https://api.uber.com/v2/oauth/token", {
+  const bodyParams = `client_id=${process.env.UBER_CLIENT_ID}&client_secret=${process.env.UBER_CLIENT_SECRET}&grant_type=client_credentials&scope=eats.order`;
+  const response = await fetch("https://auth.uber.com/oauth/v2/token", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: JSON.stringify({
-      client_id: process.env.UBER_CLIENT_ID,
-      client_secret: process.env.UBER_CLIENT_SECRET,
-      grant_type: "client_credentials",
-      scope: "eats.orders",
-    }),
+    body: bodyParams,
   });
   const tokenResponse: tokenAuthResponse = await response.json();
   return tokenResponse;
@@ -115,7 +111,7 @@ const createPlatformIntegration = (db: Database) => ({
 // Order validation functions
 const validateUberEatsOrder = (order: Order) => {
   // Implement Uber Eats specific validation
-  if (!order.id || !order.state || !order.status) {
+  if (!order.id || !order.current_state) {
     throw new Error("Invalid Uber Eats order structure");
   }
   return {
@@ -189,6 +185,7 @@ const createFoodDeliveryApp = () => {
       }
       try {
         const tokenResponse = await loginAuth0UberEats();
+        console.log("tokenResponse", tokenResponse);
         const orderResponse = await fetch(body.resource_href, {
           method: "GET",
           headers: {
