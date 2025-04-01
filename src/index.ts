@@ -25,6 +25,30 @@ type uberEatsWebhookBody = {
   };
 };
 
+type tokenAuthResponse = {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+};
+
+const loginAuth0UberEats = async () => {
+  const response = await fetch("https://api.uber.com/v2/oauth/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      client_id: process.env.UBER_CLIENT_ID,
+      client_secret: process.env.UBER_CLIENT_SECRET,
+      grant_type: "client_credentials",
+      scope: "eats.orders",
+    }),
+  });
+  const tokenResponse: tokenAuthResponse = await response.json();
+  return tokenResponse;
+};
+
 // Utility functions for database operations
 const createDatabaseOperations = (db: Database) => ({
   initializeSchema: () => {
@@ -164,9 +188,11 @@ const createFoodDeliveryApp = () => {
           break;
       }
       try {
+        const tokenResponse = await loginAuth0UberEats();
         const orderResponse = await fetch(body.resource_href, {
           method: "GET",
           headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
             "Content-Type": "application/json",
           },
         });
